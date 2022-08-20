@@ -1,11 +1,11 @@
 
-import path from 'path';
-import fs from 'fs-extra';
-import {spawn, exec} from 'child_process';
-import https from 'https';
-import appRootPath from 'app-root-path';
-import git from 'simple-git';
-import Logger from 'chegs-simple-logger';
+const path = require('path');
+const fs = require('fs-extra');
+const {spawn, exec} = require('child_process');
+const https = require('https');
+const appRootPath = require('app-root-path');
+const git = require('simple-git');
+const Logger = require('chegs-simple-logger');
 
 /** 
  * @typedef {Object} Config - Configuration for Auto Git Update
@@ -42,7 +42,7 @@ log.logDebug   = false;
 // Toggles if performing async setup task
 let ready = true;
 
-export default class AutoGitUpdate {
+module.exports = class AutoGitUpdate {
     /**
      * Creates an object which can be used to automatically update an application from a remote git repository. 
      * @param {Config} updateConfig 
@@ -53,7 +53,7 @@ export default class AutoGitUpdate {
         if (updateConfig.repository == undefined) throw new Error('You must include a repository link.');
         if (updateConfig.branch == undefined) updateConfig.branch = 'master';
         if (updateConfig.tempLocation == undefined) throw new Error('You must define a temp location for cloning the repository');
-        
+
         // Update the logger configuration if provided.
         if (updateConfig.logConfig) this.setLogConfig(updateConfig.logConfig);
 
@@ -276,7 +276,7 @@ async function readRemoteVersion() {
  * Updates the configuration for this updater to use the latest release as the repo branch
  * @param {String} repository - The link to the repo 
  */
- async function setBranchToReleaseTag(repository) {
+async function setBranchToReleaseTag(repository) {
     // Validate the configuration & generate request details
     let options = {headers: {"User-Agent": "Auto-Git-Update - " + repository}}
     if (config.token) options.headers.Authorization = `token ${config.token}`;
@@ -357,4 +357,4 @@ async function sleep(time) {
     return new Promise(function(resolve, reject) {
         setTimeout(resolve, time);
     });
-} 
+}
