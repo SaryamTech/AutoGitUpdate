@@ -8,18 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chegele/AutoGitUpdate.git"
+    "url": "git+https://github.com/SaryamTech/AutoGitUpdate.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/chegele/AutoGitUpdate/issues"
+    "url": "https://github.com/SaryamTech/AutoGitUpdate/issues"
   },
-  "homepage": "https://github.com/chegele/AutoGitUpdate#readme",
+  "homepage": "https://github.com/SaryamTech/AutoGitUpdate#readme",
   "dependencies": {
     "app-root-path": "^3.0.0",
-    "chegs-simple-logger": "^1.1.0",
     "fs-extra": "^8.1.0",
-    "simple-git": "^3.0.0"
+    "simple-git": "^3.0.0",
+    "winston": "^3.8.1"
   }
 }
