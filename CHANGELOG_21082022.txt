@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Updated
 - All logs to Winston logger
-
+- Removed package.lock.json
 
 ### Contains
 - New Fork Init - AutoGitUpdate
