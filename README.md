@@ -4,13 +4,13 @@ a node.js module used for automatically updating projects from a git repository.
 <br><br>
 
 ### Notes
- - This module comes in two flavors. ECMAScript & Commonjs.
- - The default install will be an ECMAScript module which requires use of an import statement. 
- - __Optionally, install the commonjs module to make use of the more popular require statement.__
- - This module uses simple-logger (https://github.com/chegele/Logger).
  - To update from private repositories a personal access token needs to be provided. 
- - During updates a backup of the old version is taken and stored in the configured tempLocation.
+ - During updates a backup of the old version is taken and stored in the configured tempLocation. If update process fails then old backup is put back to source
  - The remote package.json is compared to the local package.json to determine if a different version is available. 
+ - Use winston logger for clear concise logging
+ - EventEmitter provides various events through out the update cycle.
+ - Allow update of 3rd party apps.
+
 <br><br>
 
 ### Config Options
@@ -20,9 +20,9 @@ a node.js module used for automatically updating projects from a git repository.
  - **branch** *String* - [optional] The branch to update from. Defaults to master.
  - **token** *String* - [optional] A personal access token used for accessions private repositories. 
  - **ignoreFiles** *Array[String]* - [optional] An array of files to not install when updating. Useful for config files. 
+ - **autoUpdateOnCheck** *Boolean* - [optional] Force update if version mismatch found or manual update process.
  - **executeOnComplete** *String* - [optional] A command to execute after an update completes. Good for restarting the app.
  - **exitOnComplete** *Boolean* - [optional] Use process exit to stop the app after a successful update.
- - **logConfig** *Object* - [optional] An object with the logging configuration, see https://github.com/chegele/Logger
 <br><br>
 
 ### Functions
@@ -30,34 +30,10 @@ a node.js module used for automatically updating projects from a git repository.
  - **compareVersions()** - Compares package.json versions without updating.
    - Returns an object with the properties *upToDate*, *currentVersion*, & *remoteVersion*.
  - **forceUpdate()** - Updates without comparing package versions.
- - **setLogConfig(logConfig)** - Updates logging configuration. https://github.com/chegele/Logger
 <br><br>
 
-### ECMAScript Example (default)
+### Example
 ```
-npm i auto-git-update
-```
-```
-import AutoGitUpdate from 'auto-git-update';
-
-const config = {
-    repository: 'https://github.com/chegele/BackupPurger',
-    fromReleases: true,
-    tempLocation: 'C:/Users/scheg/Desktop/tmp/',
-    ignoreFiles: ['util/config.js'],
-    executeOnComplete: 'C:/Users/scheg/Desktop/worksapce/AutoGitUpdate/startTest.bat',
-    exitOnComplete: true
-}
-
-const updater = new AutoGitUpdate(config);
-
-updater.autoUpdate();
-```
-<br><br>
-
-### CommonJS Example
-```
-npm i auto-git-update@commonjs
 ```
 ```
 const AutoGitUpdate = require('auto-git-update');
@@ -75,3 +51,23 @@ const updater = new AutoGitUpdate(config);
 
 updater.autoUpdate();
 ```
+
+
+### Events
+ - **version-ok** - This event is emitted when there is no mismatch in and the local and remote versions.
+ - **version-mismatch** - This event is emitted when there is a mismatch in the local and remote versions.
+ - **update-success** - This event is emitted when the update process has completed successfully.
+ - **update-failure** - This event is emitted when there is an error in the update process.
+ - **backup-start** - This event is emitted when the backup process starts.
+ - **backup-end** - This event is emitted when the backup process has completed.
+ - **reload-start** - This event is emitted when the reload process starts.
+ - **reload-end** -  This event is emitted when the reload process ends.
+ - **reload-error** - This event is emitted when there is an error in the reload process.
+ - **download-start** - This event is emitted when the download process starts.
+ - **download-end** - This event is emitted when the download process ends.
+ - **install-deps-start** - This event is emitted when the dependency installation process starts.
+ - **install-deps-end** - This event is emitted when the dependency installation process ends.
+ - **install-deps-error** - This event is emitted when there is an error in the dependency installation process.
+ - **install-update-start** - This event is emitted when the update installation process starts.
+ - **install-update-end** - This event is emitted when the update installation process ends.
+<br><br>
