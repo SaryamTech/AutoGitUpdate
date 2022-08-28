@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [ReleaseCandidate]
 
+
+## [1.0.0 - RC2] - 28.08.2022
+
+## Added
+
+
+## Updated
+- Try/Catch block for constructor
+- Bug Fixes
+
+
 ## [1.0.0 - RC1] - 26.08.2022
 
 ## Added

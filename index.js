@@ -71,33 +71,50 @@ module.exports = class AutoGitUpdate extends EventEmitter {
         //Super class constructor
         super();
 
-        // validate config has required properties
-        if (updateConfig == undefined) throw new Error('You must pass a config object to AutoGitUpdate.');
-        if (updateConfig.repository == undefined) throw new Error('You must include a repository link.');
-        if (updateConfig.branch == undefined) updateConfig.branch = 'master';
-        if (updateConfig.tempLocation == undefined) throw new Error('You must define a temp location for cloning the repository');
+        try {
 
-        //Set auto update app's path (Current app or another app)
-        autoUpdateAppPath = updateConfig.appPathLocation ? updateConfig.appPathLocation : appRootPath.path;
+            // validate config has required properties
+            if (updateConfig == undefined) throw new Error('You must pass a config object to AutoGitUpdate.');
+            if (updateConfig.repository == undefined) throw new Error('You must include a repository link.');
+            if (updateConfig.branch == undefined) updateConfig.branch = 'master';
+            if (updateConfig.tempLocation == undefined) throw new Error('You must define a temp location for cloning the repository');
 
-        // Update config and retrieve current tag if configured to use releases
-        config = updateConfig;
-        if (config.fromReleases) {
-            ready = false;
-            setBranchToReleaseTag(config.repository);
+            //Set auto update app's path (Current app or another app)
+            autoUpdateAppPath = updateConfig.appPathLocation ? updateConfig.appPathLocation : appRootPath.path;
+
+            //Assign self
+            self = this;
+
+            //Update config
+            config = updateConfig;
+
+            // Retrieve current tag if configured to use releases
+            if (config.fromReleases) {
+                ready = false;
+                setBranchToReleaseTag(config.repository);
+            }
+
+            // Validate that Auto Git Update is being used as a dependency or testing is enabled
+            // This is to prevent the Auto Git Update module from being overwritten on accident during development
+            if (!testing) {
+                try{
+                let file = path.join(autoUpdateAppPath, 'package.json');
+                let appPackage = fs.readFileSync(file);
+                appPackage = JSON.parse(appPackage);
+                if (appPackage.name == 'auto-git-update') throw new Error('Auto Git Update is not being ran as a dependency & testing is not enabled.');
+                }
+                catch(err){
+                    throw new Error("Local version of app not found.")
+                }
+            }
+
         }
+        catch (err) {
 
-        // Validate that Auto Git Update is being used as a dependency or testing is enabled
-        // This is to prevent the Auto Git Update module from being overwritten on accident during development
-        if (!testing) {
-            let file = path.join(autoUpdateAppPath, 'package.json');
-            let appPackage = fs.readFileSync(file);
-            appPackage = JSON.parse(appPackage);
-            if (appPackage.name == 'auto-git-update') throw new Error('Auto Git Update is not being ran as a dependency & testing is not enabled.');
+            //console
+            console.log(err);
+
         }
-
-        //Assign self
-        self = this;
 
     }
 
