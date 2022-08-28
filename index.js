@@ -58,6 +58,9 @@ let backupOK = false;
 // AppPath -> Default running application's root path
 let autoUpdateAppPath = appRootPath.path;
 
+// Self object
+let self = null;
+
 module.exports = class AutoGitUpdate extends EventEmitter {
     /**
      * Creates an object which can be used to automatically update an application from a remote git repository. 
@@ -92,6 +95,9 @@ module.exports = class AutoGitUpdate extends EventEmitter {
             appPackage = JSON.parse(appPackage);
             if (appPackage.name == 'auto-git-update') throw new Error('Auto Git Update is not being ran as a dependency & testing is not enabled.');
         }
+
+        //Assign self
+        self = this;
 
     }
 
@@ -192,15 +198,15 @@ module.exports = class AutoGitUpdate extends EventEmitter {
             logger.error('Auto Git Update - Error updating application');
             logger.error(err);
 
-            //Emit update success
-            this.emit("update-failure");
-
             //Check backupOK
             if (backupOK) {
 
                 //Reload backup to source
                 await reloadBackup();
             }
+
+            //Emit update success
+            this.emit("update-failure");
 
             return false;
         }
@@ -218,7 +224,7 @@ module.exports = class AutoGitUpdate extends EventEmitter {
 async function backupApp() {
 
     //Emit backup-start
-    this.emit("backup-start");
+    self.emit("backup-start");
 
     let destination = path.join(config.tempLocation, backupSubdirectory);
     logger.info('Auto Git Update - Backing up app to ' + destination);
@@ -231,7 +237,7 @@ async function backupApp() {
     await fs.copy(autoUpdateAppPath, destination, { dereference: true });
 
     //Emit backup-end
-    this.emit("backup-end");
+    self.emit("backup-end");
 
     //Set backupOK flag
     backupOK = true;
@@ -248,7 +254,7 @@ async function reloadBackup() {
     try {
 
         //Emit reload-start
-        this.emit("reload-start");
+        self.emit("reload-start");
 
         let source = path.join(config.tempLocation, backupSubdirectory);
         logger.info('Auto Git Update - Reloading app from ' + source);
@@ -260,7 +266,7 @@ async function reloadBackup() {
         await fs.copy(source, autoUpdateAppPath, { dereference: true });
 
         //Emit reload-end
-        this.emit("reload-end");
+        self.emit("reload-end");
 
         return true;
 
@@ -271,7 +277,7 @@ async function reloadBackup() {
         logger.error(err);
 
         //Emit reload-error
-        this.emit("reload-error", err);
+        self.emit("reload-error", err);
 
         return false;
 
@@ -300,12 +306,12 @@ async function downloadUpdate() {
     await fs.emptyDir(destination);
 
     //Emit download-start
-    this.emit("download-start");
+    self.emit("download-start");
 
     await promiseClone(repo, destination, config.branch);
 
     //Emit download-start
-    this.emit("download-end");
+    self.emit("download-end");
 
     return true;
 }
@@ -317,7 +323,7 @@ function installDependencies() {
     return new Promise(function (resolve, reject) {
 
         //Emit install-deps-start
-        this.emit("install-deps-start");
+        self.emit("install-deps-start");
 
         //If testing is enabled, use alternative path to prevent overwrite of app. 
         let destination = testing ? path.join(autoUpdateAppPath, '/testing/') : autoUpdateAppPath;
@@ -331,7 +337,7 @@ function installDependencies() {
         child.stdout.on('end', function () {
 
             //Emit install-deps-end
-            this.emit("install-deps-end");
+            self.emit("install-deps-end");
 
             //resolve promise
             resolve();
@@ -347,7 +353,7 @@ function installDependencies() {
                 logger.error('Auto Git Update - ' + data);
 
                 //Emit install-deps-error
-                this.emit("install-deps-error");
+                self.emit("install-deps-error");
 
                 reject();
 
@@ -365,7 +371,7 @@ function installDependencies() {
 async function installUpdate() {
 
     //Emit install-update-start
-    this.emit("install-update-start");
+    self.emit("install-update-start");
 
     // Remove ignored files from the new version
     if (config.ignoreFiles) {
@@ -381,18 +387,18 @@ async function installUpdate() {
     let source = path.join(config.tempLocation, cloneSubdirectory);
     //If testing is enabled, use alternative path to prevent overwrite of app. 
     let destination = testing ? path.join(autoUpdateAppPath, '/testing/') : autoUpdateAppPath;
-    
+
     logger.info('Auto Git Update - Installing update...');
     logger.info('Auto Git Update - Source: ' + source);
     logger.info('Auto Git Update - Destination: ' + destination);
-    
+
     await fs.ensureDir(destination);
     await fs.emptyDir(destination);
     await fs.copy(source, destination);
 
     //Emit install-update-end
-    this.emit("install-update-end");
-    
+    self.emit("install-update-end");
+
     return true;
 }
 
@@ -410,14 +416,14 @@ function readAppVersion() {
  * Reads the applications version from the git repository.
  */
 async function readRemoteVersion() {
-    
+
     // Generate request details
     let options = {}
     let url = config.repository + `/${config.branch}/package.json`;
     if (url.includes('github')) url = url.replace('github.com', 'raw.githubusercontent.com');
     if (config.token) options.headers = { Authorization: `token ${config.token}` }
     logger.info('Auto Git Update - Reading remote version from ' + url);
-    
+
     // Send request for repositories raw package.json file
     try {
         let body = await promiseHttpsRequest(url, options);
@@ -436,7 +442,7 @@ async function readRemoteVersion() {
  * @param {String} repository - The link to the repo 
  */
 async function setBranchToReleaseTag(repository) {
-    
+
     // Validate the configuration & generate request details
     let options = { headers: { "User-Agent": "Auto-Git-Update - " + repository } }
     if (config.token) options.headers.Authorization = `token ${config.token}`;
